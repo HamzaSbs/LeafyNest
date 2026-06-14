@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leafy Nest - Log In</title>
+    <link rel="stylesheet" href="auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=K2D:wght@800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="leafyNestLogo.png" alt="Leafy Nest Logo" class="logo-img">
+        </div>
+        <div class="nav-auth">
+            <a href="signup.html" class="btn-signup">Sign up</a>
+            <a href="login.html" class="btn-login">Log in</a>
+        </div>
+    </header>
+
+    <section class="auth-section">
+        <div class="auth-card">
+            <h1 class="auth-title">Welcome Back</h1>
+            <p class="auth-subtitle">Log in to continue nurturing your plants</p>
+
+            <form class="auth-form" action="#" method="POST">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+
+                <div class="form-extra">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember" name="remember">
+                        Remember me
+                    </label>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn-submit">Log In</button>
+            </form>
+
+            <p class="auth-footer-text">Don't have an account? <a href="signup.html">Sign up</a></p>
+        </div>
+    </section>
+
+</body>
+</html>
