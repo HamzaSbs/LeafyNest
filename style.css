@@ -200,6 +200,171 @@ body {
     color: #4a6b36;
 }
 
+/* --- Featured Plants Section Styles --- */
+.featured-plants-section {
+    background-color: #fcfbfa;
+    padding: 80px 80px;
+}
+
+.featured-plants-title {
+    font-family: 'K2D', sans-serif;
+    font-weight: 800;
+    font-size: 40px;
+    color: #4a6b36;
+    text-align: center;
+}
+
+.featured-plants-subtitle {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 300;
+    color: #8a8a8a;
+    margin-top: 12px;
+    margin-bottom: 50px;
+}
+
+.featured-plants-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.plant-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 8px 24px rgba(85, 124, 62, 0.09);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.plant-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(85, 124, 62, 0.15);
+}
+
+.plant-card-top {
+    position: relative;
+}
+
+.plant-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 16px;
+    display: block;
+}
+
+.wishlist-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #ffffff;
+    color: #c5c8b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(85, 124, 62, 0.08);
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.wishlist-btn:hover {
+    color: #e05c5c;
+    transform: scale(1.05);
+}
+
+.plant-category-tag {
+    background: #eaf5e1;
+    color: #557c3e;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-block;
+    margin-top: 14px;
+}
+
+.plant-name {
+    font-weight: 700;
+    font-size: 18px;
+    color: #2e4421;
+    margin-top: 6px;
+}
+
+.stock-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 8px;
+}
+
+.stock-badge.in-stock {
+    background: #eaf5e1;
+    color: #3a7d2c;
+}
+
+.stock-badge.low-stock {
+    background: #fff4e0;
+    color: #c87d00;
+}
+
+.plant-price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    gap: 12px;
+}
+
+.plant-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #557c3e;
+}
+
+.add-to-cart-btn {
+    background: #557c3e;
+    color: #ffffff;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.add-to-cart-btn:hover {
+    background: #436230;
+    transform: translateY(-1px);
+}
+
+.view-all-plants-btn {
+    text-decoration: none;
+    background: #557c3e;
+    color: #ffffff;
+    padding: 14px 40px;
+    border-radius: 30px;
+    font-size: 17px;
+    font-weight: 600;
+    display: block;
+    width: fit-content;
+    margin: 50px auto 0;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.view-all-plants-btn:hover {
+    background: #436230;
+    transform: translateY(-1px);
+}
+
 /* --- Responsive Adjustments --- */
 @media (max-width: 768px) {
     .navbar {
@@ -226,10 +391,36 @@ body {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 16px;
     }
+
+    .featured-plants-section {
+        padding: 40px 24px;
+    }
+
+    .featured-plants-title {
+        font-size: 30px;
+    }
+
+    .featured-plants-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .plant-price-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .view-all-plants-btn {
+        margin-top: 40px;
+    }
 }
 
 @media (max-width: 480px) {
     .categories-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .featured-plants-grid {
         grid-template-columns: 1fr;
     }
 }
