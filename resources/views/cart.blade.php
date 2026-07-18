@@ -17,13 +17,13 @@
         <div class="nav-auth">
             <a href="{{ route('browse') }}" class="btn-signup">Browse</a>
             <a href="{{ route('wishlist.view') }}" class="btn-signup">Wishlist</a>
+            <a href="{{ route('dashboard') }}" class="btn-login">My Dashboard</a>
         </div>
     </header>
 
     <main class="cart-page">
         <section class="cart-shell">
             <div class="cart-heading">
-                <a href="{{ route('browse') }}" class="back-link"><strong>Back</strong></a>
                 <h1>Your Cart</h1>
             </div>
 
