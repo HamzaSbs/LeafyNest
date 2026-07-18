@@ -83,9 +83,35 @@
                         <span>Total</span>
                         <strong id="cart-total">৳ {{ number_format($total) }}</strong>
                     </div>
-                    <form method="POST" action="{{ route('order.place') }}">
+                    <form method="POST" action="{{ route('order.place') }}" class="order-form" id="order-form">
                         @csrf
-                        <button type="submit" class="btn-primary proceed-order">Proceed to Order</button>
+                        <div class="order-field">
+                            <label for="phone">Mobile Number</label>
+                            <input
+                                type="tel"
+                                id="phone"
+                                name="phone"
+                                placeholder="e.g. 017XXXXXXXX"
+                                inputmode="numeric"
+                                pattern="[0-9]{10,15}"
+                                autocomplete="tel"
+                                required
+                            >
+                        </div>
+                        <div class="order-field">
+                            <label for="address">Delivery Address</label>
+                            <textarea
+                                id="address"
+                                name="address"
+                                rows="3"
+                                placeholder="House, Road, City"
+                                minlength="5"
+                                required
+                            ></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary proceed-order" id="proceed-order" disabled aria-disabled="true">
+                            Proceed to Order
+                        </button>
                     </form>
                 </aside>
             @endif
@@ -129,6 +155,33 @@
                 }
             });
         });
+
+        const orderForm = document.getElementById('order-form');
+        if (orderForm) {
+            const proceedBtn = document.getElementById('proceed-order');
+            const phoneInput = document.getElementById('phone');
+            const addressInput = document.getElementById('address');
+
+            const toggleProceed = () => {
+                const phone = phoneInput.value.trim();
+                const address = addressInput.value.trim();
+                const phoneValid = /^[0-9]{10,15}$/.test(phone);
+                const addressValid = address.length >= 5;
+                const ready = phoneValid && addressValid;
+                proceedBtn.disabled = !ready;
+                proceedBtn.setAttribute('aria-disabled', String(!ready));
+                proceedBtn.classList.toggle('is-ready', ready);
+            };
+
+            phoneInput.addEventListener('input', toggleProceed);
+            addressInput.addEventListener('input', toggleProceed);
+            orderForm.addEventListener('submit', (e) => {
+                if (proceedBtn.disabled) {
+                    e.preventDefault();
+                }
+            });
+            toggleProceed();
+        }
 
         document.querySelectorAll('.remove-cart').forEach((button) => {
             button.addEventListener('click', async () => {

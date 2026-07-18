@@ -101,6 +101,13 @@ body.bn-bg{
 .order-summary div{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:var(--olive)}
 .order-summary div:last-of-type{font-size:20px;border-top:1px solid #ecece7;padding-top:12px}
 .proceed-order{width:100%;margin-top:8px;font-weight:700}
+.proceed-order[disabled]{background:#cfd2c7;border-color:#cfd2c7;color:#f5f5f1;cursor:not-allowed;box-shadow:none;opacity:.85}
+.proceed-order.is-ready{background:var(--leafy,#3f7d20);color:#fff;border-color:var(--leafy,#3f7d20)}
+.order-form{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.order-field{display:flex;flex-direction:column;gap:6px}
+.order-field label{font-size:13px;font-weight:600;color:var(--olive)}
+.order-field input,.order-field textarea{font:inherit;padding:10px 12px;border:1px solid #deded8;border-radius:8px;background:#fafaf6;color:#333;resize:vertical}
+.order-field input:focus,.order-field textarea:focus{outline:none;border-color:var(--leafy,#3f7d20);box-shadow:0 0 0 3px rgba(63,125,32,0.15)}
 .empty-state{background:#fff;border-radius:12px;padding:44px 24px;text-align:center;box-shadow:0 6px 18px rgba(50,50,50,0.06)}
 .empty-state h2{margin:0 0 8px;color:var(--olive)}
 .empty-state p{margin:0 0 20px;color:var(--muted)}
