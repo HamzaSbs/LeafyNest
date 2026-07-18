@@ -34,7 +34,7 @@
             <div class="welcome-card">
                 <div>
                     <span class="eyebrow">My Dashboard</span>
-                    <h1>Welcome back, {{ $userName }}</h1>
+                    <h1>Welcome back</h1>
                     <p>Review your leafy picks, saved favorites, and recent orders from one calm little corner.</p>
                 </div>
             </div>

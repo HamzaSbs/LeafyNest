@@ -35,7 +35,7 @@ Route::post('/register', [RegisteredUserController::class, 'store']);
 Route::get('/browse', [PlantController::class, 'index'])->name('browse');
 Route::get('/plants', [PlantController::class, 'index'])->name('plants');
 
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::middleware('auth')->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 Route::get('/cart', [CartController::class, 'view'])->name('cart.view');
 Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');

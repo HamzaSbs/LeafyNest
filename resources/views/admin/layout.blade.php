@@ -10,7 +10,7 @@
         body { margin: 0; font-family: 'Poppins', sans-serif; background: #f8fbf5; color: #183f2d; }
         .admin-layout { display: flex; min-height: 100vh; }
         .sidebar { width: 260px; background: linear-gradient(135deg, #2f6b45, #5da96a); color: white; padding: 24px 20px; }
-        .sidebar h2 { font-size: 24px; margin-bottom: 28px; }
+        .sidebar h2 { font-size: 24px; margin-bottom: 28px; color: #ffffff; }
         .sidebar a { display: block; color: white; text-decoration: none; padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; }
         .sidebar a:hover, .sidebar a.active { background: rgba(255,255,255,0.16); }
         .main { flex: 1; padding: 28px; }
