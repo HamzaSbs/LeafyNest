@@ -80,6 +80,10 @@ body.bn-bg{
 
 .no-results{padding:40px;text-align:center;color:var(--muted);font-weight:600}
 
+.guest-banner{display:flex;align-items:center;gap:12px;padding:14px 18px;margin-bottom:18px;border-radius:14px;background:#eaf6ec;border:1px solid #cfe5d3;color:#2c4a32;font-weight:600}
+.guest-banner .btn-login,.guest-banner .btn-signup{padding:8px 16px;font-size:.9rem;text-decoration:none}
+.guest-banner-sep{color:#6b8a72;font-weight:500}
+
 /* Cart and wishlist pages */
 .cart-page{padding:28px 40px}
 .cart-shell{max-width:1120px;margin:0 auto}

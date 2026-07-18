@@ -43,9 +43,9 @@ class PlantController extends Controller
 
     public function index(Request $request)
     {
-        $plants = self::plants();
-        $wishlist = [];
+        [$filtered, $optionLists] = $this->filteredPlants($request);
 
+        $wishlist = [];
         if (auth()->check()) {
             $wishlist = auth()->user()
                 ->wishlistItems()
@@ -53,6 +53,51 @@ class PlantController extends Controller
                 ->map(fn ($id) => (int) $id)
                 ->all();
         }
+
+        return view('browse', [
+            'plants' => $filtered,
+            'filters' => $request->all(),
+            'categories' => $optionLists['categories'],
+            'sunlights' => $optionLists['sunlights'],
+            'potSizes' => $optionLists['potSizes'],
+            'seasons' => $optionLists['seasons'],
+            'wishlist' => $wishlist,
+        ]);
+    }
+
+    /**
+     * Guest-facing browse page (read-only). Reached from the public home page
+     * before login. Reuses the same plant data + filter logic as `index()`
+     * but renders a view with no cart/wishlist actions.
+     *
+     * Logged-in users are sent to the regular `/browse` experience so the
+     * guest page is strictly for unauthenticated visitors.
+     */
+    public function guestIndex(Request $request)
+    {
+        if (auth()->check()) {
+            return redirect()->route('browse');
+        }
+
+        [$filtered, $optionLists] = $this->filteredPlants($request);
+
+        return view('guest-browse', [
+            'plants' => $filtered,
+            'filters' => $request->all(),
+            'categories' => $optionLists['categories'],
+            'sunlights' => $optionLists['sunlights'],
+            'potSizes' => $optionLists['potSizes'],
+            'seasons' => $optionLists['seasons'],
+        ]);
+    }
+
+    /**
+     * Shared filter pipeline for both `index()` and `guestIndex()`.
+     * Returns [filteredPlants, optionLists].
+     */
+    private function filteredPlants(Request $request): array
+    {
+        $plants = self::plants();
 
         $filtered = array_values(array_filter($plants, function ($p) use ($request) {
             if ($request->filled('category') && strcasecmp($p['category'], $request->query('category')) !== 0) {
@@ -82,20 +127,14 @@ class PlantController extends Controller
             return true;
         }));
 
-        $categories = array_values(array_unique(array_filter(array_map(fn ($x) => $x['category'] ?? null, $plants))));
-        $sunlights = array_values(array_unique(array_filter(array_map(fn ($x) => $x['sunlight'] ?? null, $plants))));
-        $potSizes = array_values(array_unique(array_filter(array_map(fn ($x) => $x['pot_size'] ?? null, $plants))));
-        $seasons = array_values(array_unique(array_filter(array_map(fn ($x) => $x['season'] ?? null, $plants))));
+        $optionLists = [
+            'categories' => array_values(array_unique(array_filter(array_map(fn ($x) => $x['category'] ?? null, $plants)))),
+            'sunlights'  => array_values(array_unique(array_filter(array_map(fn ($x) => $x['sunlight'] ?? null, $plants)))),
+            'potSizes'   => array_values(array_unique(array_filter(array_map(fn ($x) => $x['pot_size'] ?? null, $plants)))),
+            'seasons'    => array_values(array_unique(array_filter(array_map(fn ($x) => $x['season'] ?? null, $plants)))),
+        ];
 
-        return view('browse', [
-            'plants' => $filtered,
-            'filters' => $request->all(),
-            'categories' => $categories,
-            'sunlights' => $sunlights,
-            'potSizes' => $potSizes,
-            'seasons' => $seasons,
-            'wishlist' => $wishlist,
-        ]);
+        return [$filtered, $optionLists];
     }
 
     /**

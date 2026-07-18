@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Browse Plants</title>
-    <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('css/browse.css') }}">
@@ -15,21 +14,15 @@
             <a href="{{ url('/') }}"><img src="{{ asset('images/leafyNestLogo.png') }}" alt="Leafy Nest Logo" class="logo-img"></a>
         </div>
         <div class="nav-auth">
-            <a href="{{ route('cart.view') }}" class="btn-signup">Cart</a>
-            <a href="{{ route('wishlist.view') }}" class="btn-signup">Wishlist</a>
-            @auth
-                <a href="{{ route('dashboard') }}" class="btn-login">My Dashboard</a>
-            @else
-                <a href="{{ route('register') }}" class="btn-signup">Sign up</a>
-                <a href="{{ route('login') }}" class="btn-login">Log in</a>
-            @endauth
+            <a href="{{ route('register') }}" class="btn-signup">Sign up</a>
+            <a href="{{ route('login') }}" class="btn-login">Log in</a>
         </div>
     </header>
 
     <main class="browse-page">
         <div class="container">
             <aside class="filter-sidebar card">
-                <form method="GET" action="{{ route('browse') }}" class="filters-form">
+                <form method="GET" action="{{ route('guest.browse') }}" class="filters-form">
                     <h3 class="filters-title">Filters</h3>
 
                     <label class="filter-label">Category</label>
@@ -74,7 +67,7 @@
 
                     <div class="filter-actions">
                         <button type="submit" class="btn-primary">Apply</button>
-                        <a href="{{ route('browse') }}" class="btn-outline">Reset</a>
+                        <a href="{{ route('guest.browse') }}" class="btn-outline">Reset</a>
                     </div>
                 </form>
             </aside>
@@ -83,7 +76,7 @@
                 <div class="main-top">
                     <a href="{{ url('/') }}" class="back-link"><strong>Back</strong></a>
 
-                    <form method="GET" action="{{ route('browse') }}" class="search-bar">
+                    <form method="GET" action="{{ route('guest.browse') }}" class="search-bar">
                         {{-- preserve filters when searching --}}
                         <input type="hidden" name="category" value="{{ request('category') }}">
                         <input type="hidden" name="sunlight" value="{{ request('sunlight') }}">
@@ -100,6 +93,13 @@
                     </form>
                 </div>
 
+                <div class="guest-banner">
+                    <span>👋 Browsing as a guest.</span>
+                    <a href="{{ route('login') }}" class="btn-login">Log in to order</a>
+                    <span class="guest-banner-sep">or</span>
+                    <a href="{{ route('register') }}" class="btn-signup">Sign up</a>
+                </div>
+
                 @if(count($plants) === 0)
                     <p class="no-results">No plants found</p>
                 @else
@@ -108,13 +108,6 @@
                             <article class="plant-card">
                                 <div class="plant-media">
                                     <img src="{{ asset('images/' . $plant['image']) }}" alt="{{ $plant['name'] }}" class="plant-img">
-                                    <button
-                                        type="button"
-                                        class="wishlist-btn {{ in_array($plant['id'], $wishlist ?? [], true) ? 'is-filled' : '' }}"
-                                        data-plant-id="{{ $plant['id'] }}"
-                                        aria-label="Toggle {{ $plant['name'] }} wishlist"
-                                        aria-pressed="{{ in_array($plant['id'], $wishlist ?? [], true) ? 'true' : 'false' }}"
-                                    >&hearts;</button>
                                 </div>
 
                                 <div class="plant-body">
@@ -135,7 +128,7 @@
                                 </div>
 
                                 <div class="card-footer">
-                                    <button type="button" class="btn-primary add-cart" data-plant-id="{{ $plant['id'] }}">Add to Cart</button>
+                                    <a href="{{ route('login') }}" class="btn-primary add-cart">Log in to order</a>
                                 </div>
                             </article>
                         @endforeach
@@ -150,54 +143,5 @@
             <p class="footer-copyright">© 2026 LeafyNest. All rights reserved.</p>
         </div>
     </footer>
-    <script>
-        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        document.querySelectorAll('.add-cart').forEach((button) => {
-            button.addEventListener('click', async () => {
-                const response = await fetch('{{ route('cart.add') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
-                    body: JSON.stringify({
-                        plant_id: Number(button.dataset.plantId),
-                        quantity: 1,
-                    }),
-                });
-
-                if (response.ok) {
-                    button.textContent = 'Added';
-                    setTimeout(() => {
-                        button.textContent = 'Add to Cart';
-                    }, 1200);
-                }
-            });
-        });
-
-        document.querySelectorAll('.wishlist-btn').forEach((button) => {
-            button.addEventListener('click', async () => {
-                const response = await fetch('{{ route('wishlist.toggle') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                    },
-                    body: JSON.stringify({
-                        plant_id: Number(button.dataset.plantId),
-                    }),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    button.classList.toggle('is-filled', data.wishlisted);
-                    button.setAttribute('aria-pressed', data.wishlisted ? 'true' : 'false');
-                }
-            });
-        });
-    </script>
 </body>
 </html>

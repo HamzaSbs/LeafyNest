@@ -28,7 +28,7 @@
                 <span class="text-green">NURTURE NATURE</span>
                 <span class="text-gradient">GROW HAPPINESS</span>
             </h1>
-            <a href="#" class="btn-explore">Explore Plants</a>
+            <a href="#best-sellers" class="btn-explore">Explore Plants</a>
         </div>
         <div class="hero-bg-banner" style="background-image: url('{{ asset('images/BelowHeroNurseryPic.png') }}');"></div>
     </section>
@@ -69,7 +69,7 @@
         </div>
     </section>
 
-    <section class="featured-plants-section">
+    <section class="featured-plants-section" id="best-sellers">
         <h2 class="featured-plants-title">Our Best Sellers</h2>
         <p class="featured-plants-subtitle">Handpicked favourites from our nursery</p>
 
@@ -131,7 +131,7 @@
             </div>
         </div>
 
-        <a href="{{ route('browse') }}" class="view-all-plants-btn">View All Plants →</a>
+        <a href="{{ route('guest.browse') }}" class="view-all-plants-btn">View All Plants →</a>
     </section>
 
     <section class="why-choose-us-section">
@@ -176,7 +176,7 @@
                 <h3 class="footer-column-title">Quick Links</h3>
                 <ul class="footer-link-list">
                     <li><a href="{{ url('/') }}">Home</a></li>
-                    <li><a href="{{ route('browse') }}">Browse Plants</a></li>
+                    <li><a href="{{ route('guest.browse') }}">Browse Plants</a></li>
                     <li><a href="#">About Us</a></li>
                     <li><a href="#">Contact</a></li>
                 </ul>
