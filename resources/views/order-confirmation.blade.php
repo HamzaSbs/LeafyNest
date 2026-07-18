@@ -30,7 +30,7 @@
                 <div class="confirmation-card">
                     <span class="order-kicker">Order placed</span>
                     <h1>Thank you, {{ $order['user_name'] }}.</h1>
-                    <p>Your LeafyNest order is now pending and saved in your session history.</p>
+                    <p>Your LeafyNest order is now pending and saved to your account.</p>
 
                     <div class="order-meta-grid">
                         <div>

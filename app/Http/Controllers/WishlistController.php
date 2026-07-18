@@ -2,52 +2,71 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Plant;
+use App\Models\Wishlist;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class WishlistController extends Controller
 {
-    public function toggle(Request $request)
+    public function toggle(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'plant_id' => ['required', 'integer'],
-        ]);
-
-        $plant = collect(PlantController::plants())->firstWhere('id', $data['plant_id']);
-
-        if (!$plant) {
-            return response()->json(['message' => 'Plant not found.'], 404);
+        if (!auth()->check()) {
+            return response()->json(['message' => 'Please sign in to use the wishlist.'], 401);
         }
 
-        $wishlist = session('wishlist', []);
+        $data = $request->validate([
+            'plant_id' => ['required', 'integer', 'exists:plants,plant_id'],
+        ]);
+
+        $userId = auth()->id();
         $plantId = (int) $data['plant_id'];
 
-        if (in_array($plantId, $wishlist, true)) {
-            $wishlist = array_values(array_diff($wishlist, [$plantId]));
+        $existing = Wishlist::where('user_id', $userId)
+            ->where('plant_id', $plantId)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
             $wishlisted = false;
         } else {
-            $wishlist[] = $plantId;
+            Wishlist::create([
+                'user_id' => $userId,
+                'plant_id' => $plantId,
+                'added_at' => now(),
+            ]);
             $wishlisted = true;
         }
 
-        session(['wishlist' => $wishlist]);
+        $ids = Wishlist::where('user_id', $userId)->pluck('plant_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
 
         return response()->json([
             'message' => $wishlisted ? 'Plant added to wishlist.' : 'Plant removed from wishlist.',
             'wishlisted' => $wishlisted,
-            'wishlist' => $wishlist,
+            'wishlist' => $ids,
         ]);
     }
 
     public function view()
     {
-        $wishlist = session('wishlist', []);
-        $plants = array_values(array_filter(PlantController::plants(), function ($plant) use ($wishlist) {
-            return in_array($plant['id'], $wishlist, true);
-        }));
+        $ids = [];
+        if (auth()->check()) {
+            $ids = auth()->user()->wishlistItems()->pluck('plant_id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+        }
+
+        $plants = Plant::with(['category', 'supplier'])
+            ->whereIn('plant_id', $ids)
+            ->get()
+            ->map(fn (Plant $p) => PlantController::toArray($p))
+            ->all();
 
         return view('wishlist', [
             'plants' => $plants,
-            'wishlist' => $wishlist,
+            'wishlist' => $ids,
         ]);
     }
 }

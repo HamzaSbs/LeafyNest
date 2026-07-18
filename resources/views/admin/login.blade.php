@@ -129,8 +129,8 @@
         <form method="POST" action="{{ route('admin.login') }}">
             @csrf
             <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" value="{{ old('username') }}" placeholder="admin" required autofocus>
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="admin@leafynest.test" required autofocus>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
@@ -139,7 +139,7 @@
             <button type="submit" class="btn-submit">Log In</button>
         </form>
 
-        <p class="hint">Use username <code>admin</code> and password <code>admin123</code>.</p>
+        <p class="hint">Use email <code>admin@leafynest.test</code> and password <code>admin123</code>.</p>
     </div>
 </body>
 </html>

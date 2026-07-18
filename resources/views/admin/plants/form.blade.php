@@ -31,8 +31,8 @@
             <h2>LeafyNest</h2>
             <a href="{{ route('admin.dashboard') }}">Dashboard</a>
             <a href="{{ route('admin.plants.index') }}">Manage Plants</a>
-            <a href="{{ route('plants') }}">Categories</a>
-            <a href="{{ route('admin.plants.index') }}">Suppliers</a>
+            <a href="{{ route('admin.categories.index') }}">Categories</a>
+            <a href="{{ route('admin.suppliers.index') }}">Suppliers</a>
             <a href="{{ route('admin.orders.index') }}">Orders</a>
             <a href="{{ route('admin.low-stock') }}">Low Stock Alerts</a>
             <form method="POST" action="{{ route('admin.logout') }}" style="margin-top:24px;">
@@ -55,11 +55,25 @@
                         </div>
                         <div>
                             <label>Category</label>
-                            <input type="text" name="category" value="{{ old('category', $plant['category'] ?? '') }}" required>
+                            <select name="category_id" required>
+                                <option value="">Select a category</option>
+                                @foreach($categories ?? [] as $category)
+                                    <option value="{{ $category->category_id }}" @selected(old('category_id', $plant['category_id'] ?? '') == $category->category_id)>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label>Supplier</label>
-                            <input type="text" name="supplier" value="{{ old('supplier', $plant['supplier'] ?? '') }}" required>
+                            <select name="supplier_id" required>
+                                <option value="">Select a supplier</option>
+                                @foreach($suppliers ?? [] as $supplier)
+                                    <option value="{{ $supplier->supplier_id }}" @selected(old('supplier_id', $plant['supplier_id'] ?? '') == $supplier->supplier_id)>
+                                        {{ $supplier->name }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label>Price</label>
@@ -67,19 +81,34 @@
                         </div>
                         <div>
                             <label>Stock</label>
-                            <input type="number" name="stock" value="{{ old('stock', $plant['stock_qty'] ?? $plant['stock'] ?? '') }}" required>
+                            <input type="number" name="stock" min="0" step="1" value="{{ old('stock', $plant['stock_qty'] ?? $plant['stock'] ?? 0) }}" required>
                         </div>
                         <div>
                             <label>Sunlight</label>
-                            <input type="text" name="sunlight" value="{{ old('sunlight', $plant['sunlight'] ?? '') }}" required>
+                            <select name="sunlight" required>
+                                <option value="">Select sunlight level</option>
+                                @foreach($sunlightOptions ?? [] as $opt)
+                                    <option value="{{ $opt }}" @selected(old('sunlight', $plant['sunlight'] ?? '') === $opt)>{{ $opt }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label>Pot Size</label>
-                            <input type="text" name="pot_size" value="{{ old('pot_size', $plant['pot_size'] ?? '') }}" required>
+                            <select name="pot_size" required>
+                                <option value="">Select pot size</option>
+                                @foreach($potSizeOptions ?? [] as $opt)
+                                    <option value="{{ $opt }}" @selected(old('pot_size', $plant['pot_size'] ?? '') === $opt)>{{ $opt }}</option>
+                                @endforeach
+                            </select>
                         </div>
                         <div>
                             <label>Season</label>
-                            <input type="text" name="season" value="{{ old('season', $plant['season'] ?? '') }}" required>
+                            <select name="season" required>
+                                <option value="">Select season</option>
+                                @foreach($seasonOptions ?? [] as $opt)
+                                    <option value="{{ $opt }}" @selected(old('season', $plant['season'] ?? '') === $opt)>{{ $opt }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div>

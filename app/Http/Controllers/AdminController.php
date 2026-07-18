@@ -2,48 +2,58 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\LowStockAlert;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Plant;
+use App\Models\Supplier;
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
-    private const ADMIN_USERNAME = 'admin';
-    private const ADMIN_PASSWORD = 'admin123';
-
     public function showLogin()
     {
-        if (session('user_role') === 'admin') {
+        if (Auth::check() && Auth::user()->isAdmin()) {
             return redirect()->route('admin.dashboard');
         }
 
         return view('admin.login');
     }
 
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
-            'username' => ['required', 'string'],
+            'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
 
-        if ($credentials['username'] !== self::ADMIN_USERNAME || $credentials['password'] !== self::ADMIN_PASSWORD) {
+        if (!Auth::attempt($credentials, true)) {
             return back()
-                ->withErrors(['username' => 'Invalid admin credentials.'])
-                ->onlyInput('username');
+                ->withErrors(['email' => 'Invalid admin credentials.'])
+                ->onlyInput('email');
+        }
+
+        $user = Auth::user();
+        if (!$user->isAdmin()) {
+            Auth::logout();
+            return back()
+                ->withErrors(['email' => 'This account does not have admin access.'])
+                ->onlyInput('email');
         }
 
         $request->session()->regenerate();
-        session([
-            'user_role' => 'admin',
-            'admin_user' => self::ADMIN_USERNAME,
-        ]);
 
         return redirect()->route('admin.dashboard');
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
-        $request->session()->forget(['user_role', 'admin_user']);
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
@@ -52,138 +62,173 @@ class AdminController extends Controller
 
     public function dashboard()
     {
+        $totalPlants = Plant::count();
+        $totalOrders = Order::count();
+        $lowStockCount = Plant::where('stock_qty', '<=', 5)->count();
+        $totalRevenue = (float) Order::sum('total_amount');
+
+        $formattedRevenue = '৳' . number_format($totalRevenue, 0, '.', ',');
+
         return view('admin.dashboard', [
             'stats' => [
-                ['label' => 'Total Plants', 'value' => '12', 'accent' => 'green'],
-                ['label' => 'Total Orders', 'value' => '8', 'accent' => 'mint'],
-                ['label' => 'Low Stock Items', 'value' => '3', 'accent' => 'amber'],
-                ['label' => 'Total Revenue', 'value' => '৳14,500', 'accent' => 'dark'],
+                ['label' => 'Total Plants', 'value' => (string) $totalPlants, 'accent' => 'green'],
+                ['label' => 'Total Orders', 'value' => (string) $totalOrders, 'accent' => 'mint'],
+                ['label' => 'Low Stock Items', 'value' => (string) $lowStockCount, 'accent' => 'amber'],
+                ['label' => 'Total Revenue', 'value' => $formattedRevenue, 'accent' => 'dark'],
             ],
         ]);
     }
 
     public function plantsIndex()
     {
+        $plants = Plant::with(['category', 'supplier'])
+            ->orderBy('plant_id')
+            ->get()
+            ->map(fn (Plant $p) => PlantController::toArray($p))
+            ->all();
+
         return view('admin.plants.index', [
-            'plants' => session('admin_plants', PlantController::plants()),
+            'plants' => $plants,
         ]);
     }
 
     public function plantsCreate()
     {
-        return view('admin.plants.form', ['plant' => null]);
+        return view('admin.plants.form', $this->plantFormOptions(null));
     }
 
-    public function plantsStore(Request $request)
+    public function plantsStore(Request $request): RedirectResponse
     {
-        $plant = $this->validatePlant($request);
-        $plants = session('admin_plants', PlantController::plants());
-        $plant['id'] = (int) (collect($plants)->max('id') + 1);
-        $plants[] = $plant;
-        session(['admin_plants' => $plants]);
+        $data = $this->validatePlant($request);
+
+        Plant::create([
+            'name' => $data['name'],
+            'category_id' => $data['category_id'],
+            'supplier_id' => $data['supplier_id'],
+            'price' => $data['price'],
+            'stock_qty' => (int) $data['stock'],
+            'sunlight' => $data['sunlight'] ?? null,
+            'pot_size' => $data['pot_size'] ?? null,
+            'season' => $data['season'] ?? null,
+            'care_instructions' => $data['care_instructions'],
+            'description' => $data['description'] ?? null,
+            'image' => $data['image'] ?? null,
+        ]);
 
         return redirect()->route('admin.plants.index')->with('success', 'Plant added.');
     }
 
     public function plantsEdit(int $id)
     {
-        $plants = session('admin_plants', PlantController::plants());
-        $plant = collect($plants)->firstWhere('id', $id);
-
+        $plant = Plant::find($id);
         if (!$plant) {
             abort(404);
         }
 
-        return view('admin.plants.form', ['plant' => $plant]);
+        return view('admin.plants.form', $this->plantFormOptions(PlantController::toArray($plant)));
     }
 
-    public function plantsUpdate(Request $request, int $id)
+    public function plantsUpdate(Request $request, int $id): RedirectResponse
     {
-        $plants = session('admin_plants', PlantController::plants());
-        $index = collect($plants)->search(fn ($item) => $item['id'] === $id);
-
-        if ($index === false) {
+        $plant = Plant::find($id);
+        if (!$plant) {
             abort(404);
         }
 
-        $plants[$index] = array_merge($plants[$index], $this->validatePlant($request));
-        $plants[$index]['stock_qty'] = (int) $request->input('stock', $plants[$index]['stock_qty'] ?? 0);
-        $plants[$index]['stock'] = $plants[$index]['stock_qty'];
-        session(['admin_plants' => $plants]);
+        $data = $this->validatePlant($request);
+        $plant->update([
+            'name' => $data['name'],
+            'category_id' => $data['category_id'],
+            'supplier_id' => $data['supplier_id'],
+            'price' => $data['price'],
+            'stock_qty' => (int) $data['stock'],
+            'sunlight' => $data['sunlight'] ?? null,
+            'pot_size' => $data['pot_size'] ?? null,
+            'season' => $data['season'] ?? null,
+            'care_instructions' => $data['care_instructions'],
+            'description' => $data['description'] ?? null,
+            'image' => $data['image'] ?? null,
+        ]);
 
         return redirect()->route('admin.plants.index')->with('success', 'Plant updated.');
     }
 
-    public function plantsDestroy(int $id)
+    public function plantsDestroy(int $id): RedirectResponse
     {
-        $plants = session('admin_plants', PlantController::plants());
-        $plants = array_values(array_filter($plants, fn ($plant) => (int) $plant['id'] !== $id));
-        session(['admin_plants' => $plants]);
+        $plant = Plant::find($id);
+        if (!$plant) {
+            abort(404);
+        }
+
+        $plant->delete();
 
         return redirect()->route('admin.plants.index')->with('success', 'Plant deleted.');
     }
 
-    public function plantsUpdateStock(Request $request, int $id)
+    public function plantsUpdateStock(Request $request, int $id): RedirectResponse
     {
-        $plants = session('admin_plants', PlantController::plants());
-        $index = collect($plants)->search(fn ($item) => $item['id'] === $id);
-
-        if ($index === false) {
+        $plant = Plant::find($id);
+        if (!$plant) {
             abort(404);
         }
 
-        $stock = max(0, (int) $request->input('stock', 0));
-        $plants[$index]['stock_qty'] = $stock;
-        $plants[$index]['stock'] = $stock;
-        session(['admin_plants' => $plants]);
+        $plant->stock_qty = max(0, (int) $request->input('stock', 0));
+        $plant->save();
 
         return redirect()->route('admin.plants.index')->with('success', 'Stock updated.');
     }
 
     public function ordersIndex()
     {
-        $orders = array_values(session('orders', []));
-        usort($orders, fn ($a, $b) => strtotime($b['date'] ?? 'now') <=> strtotime($a['date'] ?? 'now'));
+        $orders = Order::with('items.plant', 'user')
+            ->orderByDesc('order_date')
+            ->get()
+            ->map(fn (Order $o) => $this->orderToArray($o))
+            ->all();
 
         return view('admin.orders.index', [
             'orders' => $orders,
         ]);
     }
 
-    public function ordersUpdateStatus(Request $request, string $orderId)
+    public function ordersUpdateStatus(Request $request, string $orderId): RedirectResponse
     {
-        $orders = session('orders', []);
-        $index = collect($orders)->search(fn ($order) => ($order['order_id'] ?? '') === $orderId);
-
-        if ($index === false) {
+        $order = Order::find($orderId);
+        if (!$order) {
             abort(404);
         }
 
         $status = $request->input('status', 'Pending');
-        $orders[$index]['status'] = in_array($status, ['Pending', 'Shipped', 'Delivered'], true) ? $status : 'Pending';
-        session(['orders' => $orders]);
+        $allowed = ['Pending', 'Shipped', 'Delivered', 'Cancelled'];
+
+        $order->status = in_array($status, $allowed, true) ? $status : 'Pending';
+        $order->save();
 
         return redirect()->route('admin.orders.index')->with('success', 'Order status updated.');
     }
 
-    public function ordersDestroy(string $orderId)
+    public function ordersDestroy(string $orderId): RedirectResponse
     {
-        $orders = array_values(array_filter(session('orders', []), fn ($order) => ($order['order_id'] ?? '') !== $orderId));
-        session(['orders' => $orders]);
+        $order = Order::find($orderId);
+        if (!$order) {
+            abort(404);
+        }
+
+        $order->delete();
 
         return redirect()->route('admin.orders.index')->with('success', 'Order removed.');
     }
 
-    public function lowStockIndex(Request $request)
+    public function lowStockIndex()
     {
-        $plants = session('admin_plants', PlantController::plants());
-
         $threshold = 5;
-        $lowStock = array_values(array_filter($plants, function ($plant) use ($threshold) {
-            return (int) ($plant['stock_qty'] ?? 0) <= $threshold;
-        }));
 
-        usort($lowStock, fn ($a, $b) => (int)($a['stock_qty'] ?? 0) <=> (int)($b['stock_qty'] ?? 0));
+        $lowStock = Plant::with(['category', 'supplier'])
+            ->where('stock_qty', '<=', $threshold)
+            ->orderBy('stock_qty')
+            ->get()
+            ->map(fn (Plant $p) => PlantController::toArray($p))
+            ->all();
 
         return view('admin.plants.low-stock', [
             'plants' => $lowStock,
@@ -191,18 +236,54 @@ class AdminController extends Controller
         ]);
     }
 
+    private function plantFormOptions(?array $plant): array
+    {
+        $filters = PlantController::filterOptions();
+
+        return [
+            'plant' => $plant,
+            'categories' => Category::orderBy('name')->get(),
+            'suppliers' => Supplier::orderBy('name')->get(),
+            'sunlightOptions' => $filters['sunlights'],
+            'potSizeOptions' => $filters['potSizes'],
+            'seasonOptions' => $filters['seasons'],
+        ];
+    }
+
     private function validatePlant(Request $request): array
     {
         return $request->validate([
-            'name' => ['required', 'string'],
-            'category' => ['required', 'string'],
-            'supplier' => ['required', 'string'],
-            'price' => ['required', 'numeric'],
+            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', 'integer', 'exists:categories,category_id'],
+            'supplier_id' => ['required', 'integer', 'exists:suppliers,supplier_id'],
+            'price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
-            'sunlight' => ['required', 'string'],
-            'pot_size' => ['required', 'string'],
-            'season' => ['required', 'string'],
+            'sunlight' => ['nullable', 'string', 'max:255'],
+            'pot_size' => ['nullable', 'string', 'max:255'],
+            'season' => ['nullable', 'string', 'max:255'],
             'care_instructions' => ['required', 'string'],
+            'description' => ['nullable', 'string'],
+            'image' => ['nullable', 'string'],
         ]);
+    }
+
+    private function orderToArray(Order $o): array
+    {
+        return [
+            'order_id' => (string) $o->order_id,
+            'date' => $o->order_date?->format('Y-m-d H:i'),
+            'status' => $o->status,
+            'total' => (float) $o->total_amount,
+            'customer_name' => $o->user?->name,
+            'customer_email' => $o->user?->email,
+            'items' => $o->items->map(fn (OrderItem $it) => [
+                'id' => (int) $it->plant_id,
+                'name' => $it->plant?->name,
+                'image' => $it->plant?->image,
+                'price' => (float) $it->unit_price,
+                'quantity' => (int) $it->quantity,
+                'row_total' => (float) $it->unit_price * (int) $it->quantity,
+            ])->all(),
+        ];
     }
 }

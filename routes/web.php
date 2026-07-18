@@ -5,9 +5,11 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PlantController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Middleware\AdminMiddleware;
 
@@ -15,7 +17,7 @@ Route::get('/', function () {
     return view('index', [
         'wishlist' => session('wishlist', []),
     ]);
-});
+})->name('home');
 
 Route::get('/login', function () {
     return view('login');
@@ -43,11 +45,9 @@ Route::delete('/cart/{plantId}', [CartController::class, 'remove'])->name('cart.
 Route::get('/wishlist', [WishlistController::class, 'view'])->name('wishlist.view');
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 
-Route::get('/home', function () {
-    return view('index', [
-        'wishlist' => session('wishlist', []),
-    ]);
-})->name('home');
+Route::post('/order/place', [OrderController::class, 'placeOrder'])->name('order.place');
+Route::get('/order-confirmation/{orderId?}', [OrderController::class, 'orderConfirmation'])->name('order.confirmation');
+Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.history');
 
 Route::get('/admin/login', [AdminController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AdminController::class, 'login'])->name('admin.login.submit');
@@ -65,23 +65,19 @@ Route::middleware([AdminMiddleware::class])->prefix('admin')->group(function () 
     Route::delete('/plants/{id}', [AdminController::class, 'plantsDestroy'])->name('admin.plants.destroy');
     Route::post('/plants/{id}/stock', [AdminController::class, 'plantsUpdateStock'])->name('admin.plants.update-stock');
 
+    Route::get('/categories', [CategoryController::class, 'index'])->name('admin.categories.index');
+    Route::post('/categories', [CategoryController::class, 'store'])->name('admin.categories.store');
+    Route::put('/categories/{id}', [CategoryController::class, 'update'])->name('admin.categories.update');
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy'])->name('admin.categories.destroy');
+
+    Route::get('/suppliers', [SupplierController::class, 'index'])->name('admin.suppliers.index');
+    Route::post('/suppliers', [SupplierController::class, 'store'])->name('admin.suppliers.store');
+    Route::put('/suppliers/{id}', [SupplierController::class, 'update'])->name('admin.suppliers.update');
+    Route::delete('/suppliers/{id}', [SupplierController::class, 'destroy'])->name('admin.suppliers.destroy');
+
     Route::get('/orders', [AdminController::class, 'ordersIndex'])->name('admin.orders.index');
     Route::post('/orders/{orderId}/status', [AdminController::class, 'ordersUpdateStatus'])->name('admin.orders.update-status');
     Route::delete('/orders/{orderId}', [AdminController::class, 'ordersDestroy'])->name('admin.orders.destroy');
 
     Route::get('/low-stock', [AdminController::class, 'lowStockIndex'])->name('admin.low-stock');
 });
-
-Route::post('/order/place', [OrderController::class, 'placeOrder'])->name('order.place');
-Route::get('/order-confirmation/{orderId?}', function (?string $orderId = null) {
-    $order = session('last_order');
-
-    if ($orderId) {
-        $order = collect(session('orders', []))->firstWhere('order_id', $orderId);
-    }
-
-    return view('order-confirmation', [
-        'order' => $order,
-    ]);
-})->name('order.confirmation');
-Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.history');

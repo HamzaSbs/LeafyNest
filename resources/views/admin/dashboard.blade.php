@@ -29,8 +29,8 @@
             <h2>LeafyNest</h2>
             <a href="{{ route('admin.dashboard') }}">Dashboard</a>
             <a href="{{ route('admin.plants.index') }}">Manage Plants</a>
-            <a href="{{ route('plants') }}">Categories</a>
-            <a href="{{ route('admin.plants.index') }}">Suppliers</a>
+            <a href="{{ route('admin.categories.index') }}">Categories</a>
+            <a href="{{ route('admin.suppliers.index') }}">Suppliers</a>
             <a href="{{ route('admin.orders.index') }}">Orders</a>
             <a href="{{ route('admin.low-stock') }}">Low Stock Alerts</a>
             <form method="POST" action="{{ route('admin.logout') }}" style="margin-top:24px;">
