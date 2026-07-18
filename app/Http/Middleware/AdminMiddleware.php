@@ -10,12 +10,12 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->is('admin') || $request->is('admin/dashboard')) {
+        if ($request->is('admin') || $request->is('admin/dashboard') || $request->is('admin/login') || $request->is('admin/logout')) {
             return $next($request);
         }
 
         if (session('user_role') !== 'admin') {
-            return redirect('/home')->with('error', 'You must be an admin to access this area.');
+            return redirect()->route('admin.login')->with('error', 'Please sign in as admin to continue.');
         }
 
         return $next($request);

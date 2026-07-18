@@ -30,10 +30,14 @@
             <h2>LeafyNest</h2>
             <a href="{{ route('admin.dashboard') }}">Dashboard</a>
             <a href="{{ route('admin.plants.index') }}">Manage Plants</a>
-            <a href="#">Categories</a>
-            <a href="#">Suppliers</a>
+            <a href="{{ route('plants') }}">Categories</a>
+            <a href="{{ route('admin.plants.index') }}">Suppliers</a>
             <a href="{{ route('admin.orders.index') }}">Orders</a>
-            <a href="#">Low Stock Alerts</a>
+            <a href="{{ route('admin.low-stock') }}">Low Stock Alerts</a>
+            <form method="POST" action="{{ route('admin.logout') }}" style="margin-top:24px;">
+                @csrf
+                <button type="submit" style="width:100%; background:rgba(255,255,255,0.12); color:white; border:none; padding:10px 12px; border-radius:8px; cursor:pointer; font-family:inherit; font-weight:600;">Logout</button>
+            </form>
         </aside>
         <main class="main">
             <div class="page-header">
@@ -62,7 +66,13 @@
                                 <td>{{ $plant['category'] }}</td>
                                 <td>{{ $plant['supplier'] }}</td>
                                 <td>৳{{ number_format($plant['price']) }}</td>
-                                <td>{{ $plant['stock_qty'] ?? $plant['stock'] ?? 0 }}</td>
+                                <td>
+                                    <form method="POST" action="{{ route('admin.plants.update-stock', ['id' => $plant['id']]) }}" style="display:flex; gap:8px; align-items:center;">
+                                        @csrf
+                                        <input type="number" name="stock" value="{{ $plant['stock_qty'] ?? $plant['stock'] ?? 0 }}" min="0" style="width:90px; padding:6px; border-radius:6px; border:1px solid #d7e7d5;">
+                                        <button type="submit" class="btn btn-outline">Update</button>
+                                    </form>
+                                </td>
                                 <td>
                                     <a href="{{ route('admin.plants.edit', ['id' => $plant['id']]) }}" class="btn btn-outline">Edit</a>
                                     <form method="POST" action="{{ route('admin.plants.destroy', ['id' => $plant['id']]) }}" style="display:inline;" onsubmit="return confirm('Delete this plant?')">
