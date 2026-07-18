@@ -83,7 +83,10 @@
                         <span>Total</span>
                         <strong id="cart-total">৳ {{ number_format($total) }}</strong>
                     </div>
-                    <button type="button" class="btn-primary proceed-order">Proceed to Order</button>
+                    <form method="POST" action="{{ route('order.place') }}">
+                        @csrf
+                        <button type="submit" class="btn-primary proceed-order">Proceed to Order</button>
+                    </form>
                 </aside>
             @endif
         </section>

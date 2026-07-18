@@ -22,7 +22,7 @@
                 <a href="{{ route('browse') }}">Browse Plants</a>
                 <a href="{{ route('cart.view') }}">My Cart</a>
                 <a href="{{ route('wishlist.view') }}">My Wishlist</a>
-                <a href="#recent-orders">My Orders</a>
+                <a href="{{ route('order.history') }}">My Orders</a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit">Logout</button>
@@ -78,7 +78,7 @@
                             <tbody>
                                 @foreach($orders as $index => $order)
                                     <tr>
-                                        <td>{{ $order['order_no'] ?? $order['id'] ?? 'Order #' . ($index + 1) }}</td>
+                                        <td>{{ $order['order_id'] ?? $order['order_no'] ?? $order['id'] ?? 'Order #' . ($index + 1) }}</td>
                                         <td>{{ $order['date'] ?? $order['created_at'] ?? '-' }}</td>
                                         <td><span class="status-pill">{{ $order['status'] ?? 'Pending' }}</span></td>
                                         <td>৳ {{ number_format($order['total'] ?? 0) }}</td>

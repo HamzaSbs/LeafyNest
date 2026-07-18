@@ -1,12 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PlantController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Middleware\AdminMiddleware;
 
 Route::get('/', function () {
     return view('index', [
@@ -28,6 +31,7 @@ Route::get('/register', function () {
 Route::post('/register', [RegisteredUserController::class, 'store']);
 
 Route::get('/browse', [PlantController::class, 'index'])->name('browse');
+Route::get('/plants', [PlantController::class, 'index'])->name('plants');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -38,3 +42,38 @@ Route::delete('/cart/{plantId}', [CartController::class, 'remove'])->name('cart.
 
 Route::get('/wishlist', [WishlistController::class, 'view'])->name('wishlist.view');
 Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+
+Route::get('/home', function () {
+    return view('index', [
+        'wishlist' => session('wishlist', []),
+    ]);
+})->name('home');
+
+Route::middleware([AdminMiddleware::class])->prefix('admin')->group(function () {
+    Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard.alt');
+
+    Route::get('/plants', [AdminController::class, 'plantsIndex'])->name('admin.plants.index');
+    Route::get('/plants/create', [AdminController::class, 'plantsCreate'])->name('admin.plants.create');
+    Route::post('/plants', [AdminController::class, 'plantsStore'])->name('admin.plants.store');
+    Route::get('/plants/{id}/edit', [AdminController::class, 'plantsEdit'])->name('admin.plants.edit');
+    Route::put('/plants/{id}', [AdminController::class, 'plantsUpdate'])->name('admin.plants.update');
+    Route::delete('/plants/{id}', [AdminController::class, 'plantsDestroy'])->name('admin.plants.destroy');
+
+    Route::get('/orders', [AdminController::class, 'ordersIndex'])->name('admin.orders.index');
+    Route::post('/orders/{orderId}/status', [AdminController::class, 'ordersUpdateStatus'])->name('admin.orders.update-status');
+});
+
+Route::post('/order/place', [OrderController::class, 'placeOrder'])->name('order.place');
+Route::get('/order-confirmation/{orderId?}', function (?string $orderId = null) {
+    $order = session('last_order');
+
+    if ($orderId) {
+        $order = collect(session('orders', []))->firstWhere('order_id', $orderId);
+    }
+
+    return view('order-confirmation', [
+        'order' => $order,
+    ]);
+})->name('order.confirmation');
+Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.history');
